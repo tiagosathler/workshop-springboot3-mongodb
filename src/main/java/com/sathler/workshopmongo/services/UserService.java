@@ -7,7 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sathler.workshopmongo.domain.User;
-import com.sathler.workshopmongo.dto.UserDTO;
 import com.sathler.workshopmongo.repositories.UserRepository;
 import com.sathler.workshopmongo.services.exception.ObjectNotFoundException;
 
@@ -33,5 +32,10 @@ public class UserService {
 
 	public User insert(User user) {
 		return repository.insert(user);
+	}
+
+	public void delete(String id) {
+		findById(id);
+		repository.deleteById(id);
 	}
 }
