@@ -24,7 +24,7 @@ public class UserService {
 		Optional<User> user = repository.findById(id);
 
 		if (user.isEmpty()) {
-			throw new ObjectNotFoundException("Object id '" + id + "' not found!");
+			throw new ObjectNotFoundException("User id '" + id + "' not found!");
 		}
 
 		return user.get();
