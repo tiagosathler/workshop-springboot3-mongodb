@@ -20,6 +20,8 @@ import com.sathler.workshopmongo.domain.User;
 import com.sathler.workshopmongo.dto.UserDTO;
 import com.sathler.workshopmongo.services.UserService;
 
+import jakarta.validation.Valid;
+
 @RestController
 @RequestMapping(value = "/users")
 public class UserResource {
@@ -51,7 +53,7 @@ public class UserResource {
 	}
 
 	@PostMapping
-	public ResponseEntity<UserDTO> insert(@RequestBody UserDTO userDTO) {
+	public ResponseEntity<UserDTO> insert(@Valid @RequestBody UserDTO userDTO) {
 		User user = service.insert(userDTO.userFromDTO());
 
 		userDTO.setId(user.getId());
@@ -73,7 +75,7 @@ public class UserResource {
 	}
 
 	@PutMapping(value = "/{id}")
-	public ResponseEntity<UserDTO> updateById(@PathVariable String id, @RequestBody UserDTO userDTO) {
+	public ResponseEntity<UserDTO> updateById(@PathVariable String id, @Valid @RequestBody UserDTO userDTO) {
 		User user = service.updateById(id, userDTO.userFromDTO());
 
 		return ResponseEntity.ok().body(new UserDTO(user));
