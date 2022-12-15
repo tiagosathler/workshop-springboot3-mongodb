@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.sathler.workshopmongo.domain.User;
 import com.sathler.workshopmongo.repositories.UserRepository;
+import com.sathler.workshopmongo.services.exception.ObjectAlreadyExists;
 import com.sathler.workshopmongo.services.exception.ObjectNotFoundException;
 
 @Service
@@ -31,6 +32,11 @@ public class UserService {
 	}
 
 	public User insert(User user) {
+		User foundUserByEmail = repository.findByEmailIgnoreCase(user.getEmail());
+
+		if (foundUserByEmail != null) {
+			throw new ObjectAlreadyExists("User email '" + user.getEmail() + "' already exists");
+		}
 		return repository.insert(user);
 	}
 
@@ -40,9 +46,16 @@ public class UserService {
 	}
 
 	public User updateById(String id, User user) {
-		User foundUser = findById(id);
-		updateData(foundUser, user);
-		return repository.save(foundUser);
+		User foundUserById = findById(id);
+
+		User foundUserByEmail = repository.findByEmailIgnoreCase(user.getEmail());
+
+		if (foundUserByEmail != null && !foundUserById.equals(foundUserByEmail)) {
+			throw new ObjectAlreadyExists("User email '" + user.getEmail() + "' already exists in another user");
+		}
+
+		updateData(foundUserById, user);
+		return repository.save(foundUserById);
 	}
 
 	private void updateData(User toUpdateUser, User user) {

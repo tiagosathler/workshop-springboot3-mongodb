@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import com.sathler.workshopmongo.resources.exception.StandardError;
+import com.sathler.workshopmongo.services.exception.ObjectAlreadyExists;
 import com.sathler.workshopmongo.services.exception.ObjectNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,7 +26,21 @@ public class ResourceExceptionHandler {
 		StandardError err = new StandardError(
 				Instant.now(),
 				status.value(),
-				"Not found",
+				status.getReasonPhrase(),
+				e.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity.status(status).body(err);
+	}
+	
+	@ExceptionHandler(ObjectAlreadyExists.class)
+	public ResponseEntity<StandardError> objectNotFound(ObjectAlreadyExists e, HttpServletRequest request) {
+		HttpStatus status = HttpStatus.CONFLICT;
+
+		StandardError err = new StandardError(
+				Instant.now(),
+				status.value(),
+				status.getReasonPhrase(),
 				e.getMessage(),
 				request.getRequestURI());
 
@@ -45,7 +60,7 @@ public class ResourceExceptionHandler {
 		StandardError err = new StandardError(
 				Instant.now(),
 				status.value(),
-				"Bad request",
+				status.getReasonPhrase(),
 				errors.toString(),
 				request.getRequestURI());
 
