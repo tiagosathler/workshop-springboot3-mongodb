@@ -33,4 +33,9 @@ public class AuthorDTO implements Serializable {
 	public void setName(String name) {
 		this.name = name;
 	}
+
+	@Override
+	public String toString() {
+		return "AuthorDTO [id=" + id + ", name=" + name + "]";
+	}
 }

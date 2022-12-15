@@ -1,5 +1,6 @@
 package com.sathler.workshopmongo.resources;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.List;
 
@@ -7,24 +8,35 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.sathler.workshopmongo.domain.Post;
+import com.sathler.workshopmongo.domain.User;
+import com.sathler.workshopmongo.dto.PostDTO;
 import com.sathler.workshopmongo.resources.util.URL;
 import com.sathler.workshopmongo.services.PostService;
+import com.sathler.workshopmongo.services.UserService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping(value = "/posts")
 public class PostResource {
 
 	@Autowired
-	private PostService service;
+	private PostService postService;
+	
+	@Autowired
+	private UserService userService;
 
 	@GetMapping(value = "/{id}")
 	public ResponseEntity<Post> findById(@PathVariable String id) {
-		Post post = service.findById(id);
+		Post post = postService.findById(id);
 		return ResponseEntity.ok().body(post);
 	}
 
@@ -32,7 +44,7 @@ public class PostResource {
 	public ResponseEntity<List<Post>> findByTitle(@RequestParam(value = "text", defaultValue = "") String text) {
 		text = URL.decodeParam(text);
 
-		List<Post> posts = service.findByTitle(text);
+		List<Post> posts = postService.findByTitle(text);
 		return ResponseEntity.ok().body(posts);
 	}
 
@@ -46,7 +58,26 @@ public class PostResource {
 		Date minDate = URL.convertDate(minDateStr, new Date(0L));
 		Date maxDate = URL.convertDate(maxDateStr, new Date());
 
-		List<Post> posts = service.fullSearch(text, minDate, maxDate);
+		List<Post> posts = postService.fullSearch(text, minDate, maxDate);
 		return ResponseEntity.ok().body(posts);
+	}
+	
+	@PostMapping(value = "/user/{id}")
+	public ResponseEntity<PostDTO> insertPost(@PathVariable String id, @Valid @RequestBody PostDTO postDTO) {
+		User foundUser = userService.findById(id);
+
+		Post newPost = postService.insert(foundUser, postDTO.postFromDTO());
+
+		userService.addPostToUser(newPost, foundUser);
+
+		PostDTO resultPost = new PostDTO(newPost);
+
+		URI uri = ServletUriComponentsBuilder
+				.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(resultPost.getId())
+				.toUri();
+
+		return ResponseEntity.created(uri).body(resultPost);
 	}
 }

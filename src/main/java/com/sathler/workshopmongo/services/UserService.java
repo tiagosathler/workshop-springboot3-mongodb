@@ -6,6 +6,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sathler.workshopmongo.domain.Post;
 import com.sathler.workshopmongo.domain.User;
 import com.sathler.workshopmongo.repositories.UserRepository;
 import com.sathler.workshopmongo.services.exception.ObjectAlreadyExists;
@@ -56,6 +57,11 @@ public class UserService {
 
 		updateData(foundUserById, user);
 		return repository.save(foundUserById);
+	}
+
+	public User addPostToUser(Post post, User user) {
+		user.getPosts().add(post);
+		return repository.save(user);
 	}
 
 	private void updateData(User toUpdateUser, User user) {

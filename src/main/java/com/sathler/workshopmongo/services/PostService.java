@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.sathler.workshopmongo.domain.Post;
+import com.sathler.workshopmongo.domain.User;
+import com.sathler.workshopmongo.dto.AuthorDTO;
 import com.sathler.workshopmongo.repositories.PostRepository;
 import com.sathler.workshopmongo.services.exception.ObjectNotFoundException;
 
@@ -31,9 +33,14 @@ public class PostService {
 //		return repository.findByTitleContainingIgnoreCase(text);
 		return repository.searchTitle(text);
 	}
-	
+
 	public List<Post> fullSearch(String text, Date minDate, Date maxDate) {
 //		maxDate = new Date(maxDate.getTime() + 24 * 60 * 60 * 1000);
 		return repository.fullSearch(text, minDate, maxDate);
+	}
+
+	public Post insert(User user, Post post) {
+		post.setAuthor(new AuthorDTO(user));
+		return repository.insert(post);
 	}
 }
