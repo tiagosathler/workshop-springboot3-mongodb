@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -33,7 +34,7 @@ public class ResourceExceptionHandler {
 
 		return ResponseEntity.status(status).body(err);
 	}
-	
+
 	@ExceptionHandler(ObjectAlreadyExists.class)
 	public ResponseEntity<StandardError> objectNotFound(ObjectAlreadyExists e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.CONFLICT;
@@ -47,7 +48,7 @@ public class ResourceExceptionHandler {
 
 		return ResponseEntity.status(status).body(err);
 	}
-	
+
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<StandardError> badRequest(MethodArgumentNotValidException e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.BAD_REQUEST;
@@ -67,7 +68,7 @@ public class ResourceExceptionHandler {
 
 		return ResponseEntity.status(status).body(err);
 	}
-	
+
 	@ExceptionHandler(HttpRequestMethodNotSupportedException.class)
 	public ResponseEntity<StandardError> methodNotSupported(HttpRequestMethodNotSupportedException e, HttpServletRequest request) {
 		HttpStatus status = HttpStatus.METHOD_NOT_ALLOWED;
@@ -81,5 +82,18 @@ public class ResourceExceptionHandler {
 
 		return ResponseEntity.status(status).body(err);
 	}
-	
+
+	@ExceptionHandler(HttpMessageNotReadableException.class)
+	public ResponseEntity<StandardError> notReadable(HttpMessageNotReadableException e, HttpServletRequest request) {
+		HttpStatus status = HttpStatus.UNPROCESSABLE_ENTITY;
+
+		StandardError err = new StandardError(
+				Instant.now(),
+				status.value(),
+				status.getReasonPhrase(),
+				e.getMessage(),
+				request.getRequestURI());
+
+		return ResponseEntity.status(status).body(err);
+	}
 }

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import com.sathler.workshopmongo.domain.Post;
 import com.sathler.workshopmongo.domain.User;
 import com.sathler.workshopmongo.dto.AuthorDTO;
+import com.sathler.workshopmongo.dto.CommentDTO;
 import com.sathler.workshopmongo.repositories.PostRepository;
 import com.sathler.workshopmongo.services.exception.ObjectNotFoundException;
 
@@ -39,8 +40,14 @@ public class PostService {
 		return repository.fullSearch(text, minDate, maxDate);
 	}
 
-	public Post insert(User user, Post post) {
+	public Post insertPost(User user, Post post) {
 		post.setAuthor(new AuthorDTO(user));
 		return repository.insert(post);
+	}
+	
+	public Post insertComment(User user, Post post, CommentDTO commentDTO) {
+		commentDTO.setAuthor(new AuthorDTO(user));
+		post.getComments().add(commentDTO);
+		return repository.save(post);
 	}
 }

@@ -13,10 +13,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import com.sathler.workshopmongo.domain.Post;
 import com.sathler.workshopmongo.domain.User;
+import com.sathler.workshopmongo.dto.CommentDTO;
 import com.sathler.workshopmongo.dto.PostDTO;
 import com.sathler.workshopmongo.resources.util.URL;
 import com.sathler.workshopmongo.services.PostService;
@@ -63,21 +64,42 @@ public class PostResource {
 	}
 	
 	@PostMapping(value = "/user/{id}")
-	public ResponseEntity<PostDTO> insertPost(@PathVariable String id, @Valid @RequestBody PostDTO postDTO) {
+	public ResponseEntity<PostDTO> insertPost(
+			@PathVariable String id,
+			@Valid @RequestBody PostDTO postDTO) {
 		User foundUser = userService.findById(id);
 
-		Post newPost = postService.insert(foundUser, postDTO.postFromDTO());
+		Post newPost = postService.insertPost(foundUser, postDTO.postFromDTO());
 
 		userService.addPostToUser(newPost, foundUser);
 
 		PostDTO resultPost = new PostDTO(newPost);
 
-		URI uri = ServletUriComponentsBuilder
-				.fromCurrentRequest()
-				.path("/{id}")
-				.buildAndExpand(resultPost.getId())
-				.toUri();
+		URI uri = getPostURI(newPost);
 
 		return ResponseEntity.created(uri).body(resultPost);
+	}
+	
+	@PostMapping(value = "/{postId}/user/{userId}")
+	public ResponseEntity<Post> insertComment(
+			@PathVariable String postId,
+			@PathVariable String userId,
+			@Valid @RequestBody CommentDTO commentDTO) {
+		Post foundPost = postService.findById(postId);
+		User foundUser = userService.findById(userId);
+
+		Post updatedPost = postService.insertComment(foundUser, foundPost, commentDTO);
+
+		URI uri = getPostURI(updatedPost);
+
+		return ResponseEntity.created(uri).body(updatedPost);
+	}
+
+	private static URI getPostURI(Post post) {
+		return UriComponentsBuilder
+				.fromPath("/posts")
+				.path("/{id}")
+				.buildAndExpand(post.getId())
+				.toUri();
 	}
 }
